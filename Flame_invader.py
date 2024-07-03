@@ -18,7 +18,6 @@ class GameState:
         self.animation_speed = 8
         self.animation_counter = 0
         self.enemy_spawn_timer = 0
-        # self.difficulty = 1
         self.enemy_spawn_rate = 100
         self.enemy_yellow_spawn_timer = 0
         self.enemy_yellow_spawn_rate = 240
@@ -220,7 +219,6 @@ def game_loop(screen, state):
     ship_x = screen.get_width() / 2 - dragon_sprites[0].get_width() / 2
     ship_y = screen.get_height() - dragon_sprites[0].get_height() - 100
     dragon_index = 0
-    # state = GameState(screen, dragon_sprites)
     while state.is_running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -249,21 +247,21 @@ def game_loop(screen, state):
         for fireball in state.fireballs[:]:
             fireball.update()
             fireball_rect = pygame.Rect(fireball.x, fireball.y, fireball.image.get_width(), fireball.image.get_height())
-            fireball_removed = False  # Flag to track if the fireball has been removed
+            fireball_removed = False
 
             for enemy in state.enemies[:]:
                 enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.image.get_width(), enemy.image.get_height())
                 if fireball_rect.colliderect(enemy_rect):
                     state.fireballs.remove(fireball)
-                    fireball_removed = True  # Set flag to True after removal
+                    fireball_removed = True
                     enemy.health -= state.fireball_damage
                     if enemy.health <= 0:
                         state.enemies.remove(enemy)
                         state.score += 1
-                    break  # Exit the loop since the fireball has been processed
+                    break
 
             if fireball_removed:
-                continue  # Skip the rest of the loop if the fireball has been removed
+                continue
 
             for enemy_yellow in state.enemies_yellow[:]:
                 enemy_yellow_rect = pygame.Rect(enemy_yellow.x, enemy_yellow.y, enemy_yellow.image.get_width(), enemy_yellow.image.get_height())
@@ -314,7 +312,7 @@ def game_loop(screen, state):
                 dragon_rect = pygame.Rect(ship_x, ship_y, dragon_sprites[0].get_width(), dragon_sprites[0].get_height())
                 if dragon_rect.colliderect(enemy_rect):
                     state.dragon_health -= 10 * state.defense
-                    state.enemies.remove(enemy)  # Optionnel: supprimez l'ennemi après la collision
+                    state.enemies.remove(enemy)
         for enemy in state.enemies:
             enemy.draw(screen)
 
@@ -333,7 +331,7 @@ def game_loop(screen, state):
                 dragon_rect = pygame.Rect(ship_x, ship_y, dragon_sprites[0].get_width(), dragon_sprites[0].get_height())
                 if dragon_rect.colliderect(enemy_yellow_rect):
                     state.dragon_health -= 10 * state.defense
-                    state.enemies_yellow.remove(enemy_yellow)  # Optionnel: supprimez l'ennemi après la collision
+                    state.enemies_yellow.remove(enemy_yellow)
         for enemy_yellow in state.enemies_yellow:
             enemy_yellow.draw(screen)
 
@@ -352,12 +350,12 @@ def game_loop(screen, state):
                 dragon_rect = pygame.Rect(ship_x, ship_y, dragon_sprites[0].get_width(), dragon_sprites[0].get_height())
                 if dragon_rect.colliderect(enemy_green_rect):
                     state.dragon_health -= 10 * state.defense
-                    state.enemies_green.remove(enemy_green)  # Optionnel: supprimez l'ennemi après la collision
+                    state.enemies_green.remove(enemy_green)
         for enemy_green in state.enemies_green:
             enemy_green.draw(screen)
 
         state.coin_spawn_timer += 1
-        if state.coin_spawn_timer >= 1000:  # Ajustez selon la fréquence désirée
+        if state.coin_spawn_timer >= 1000:
             coin_x = random.randint(0, screen.get_width() - 64)
             state.coins.append(Coin(coin_x, -64))
             state.coin_spawn_timer = 0
@@ -365,9 +363,9 @@ def game_loop(screen, state):
             coin.update()
             coin_rect = pygame.Rect(coin.x, coin.y, coin.image.get_width(), coin.image.get_height())
             dragon_rect = pygame.Rect(ship_x, ship_y, dragon_sprites[0].get_width(), dragon_sprites[0].get_height())
-            if coin.y > screen.get_height():  # Suppression si atteint le bas
+            if coin.y > screen.get_height():
                 state.coins.remove(coin)
-            elif coin_rect.colliderect(dragon_rect):  # Suppression si collision avec le dragon
+            elif coin_rect.colliderect(dragon_rect):
                 state.coins.remove(coin)
                 state.upgrade_points += 1
         for coin in state.coins:
@@ -395,7 +393,7 @@ def shop_menu(screen, state):
     speed_icon = pygame.transform.scale(speed_icon, (100, 100))
     button_images = [attack_icon, defense_icon, speed_icon]
 
-    font = pygame.font.Font(None, 36)  # Choisissez une police et une taille appropriées
+    font = pygame.font.Font(None, 36)
 
     def modify_speed(state):
         if (state.upgrade_points >= 1):
@@ -438,7 +436,7 @@ def shop_menu(screen, state):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for button in buttons:
                     if button.is_hovered(mouse_pos):
-                        button.action()  # Execute the button's action
+                        button.action()
         screen.fill((0, 0, 0))
         screen.blit(shop_background, (0, 0))
         for i, button in enumerate(buttons):
@@ -448,19 +446,16 @@ def shop_menu(screen, state):
             screen.blit(image, (image_x, image_y))
             button.draw(screen)
 
-        # Affichage du niveau de vitesse
         speed_lvl_text = font.render(f"LVL: {state.speed_lvl}", True, (255, 255, 255))
         speed_lvl_text_pos = (width // 2 + 215, height // 2 + 110)
         screen.blit(speed_lvl_text, speed_lvl_text_pos)
 
-        # Affichage du niveau d'attaque
         attack_lvl_text = font.render(f"LVL: {state.attack_lvl}", True, (255, 255, 255))
-        attack_lvl_text_pos = (width // 2 - 285, height // 2 + 110)  # Ajustez la position selon votre mise en page
+        attack_lvl_text_pos = (width // 2 - 285, height // 2 + 110)
         screen.blit(attack_lvl_text, attack_lvl_text_pos)
 
-        # Affichage du niveau de défense
         defense_lvl_text = font.render(f"LVL: {state.defense_lvl}", True, (255, 255, 255))
-        defense_lvl_text_pos = (width // 2 - 35, height // 2 + 110)  # Ajustez la position selon votre mise en page
+        defense_lvl_text_pos = (width // 2 - 35, height // 2 + 110)
         screen.blit(defense_lvl_text, defense_lvl_text_pos)
 
         upgrade_text = font.render("Upgrade: " + str(state.upgrade_points), True, (255, 255, 255))
@@ -483,7 +478,7 @@ def game_over(screen, state):
 def set_volume(value):
     pygame.mixer.music.set_volume(value)
 
-def music(state, toggle_state=None):  # Ajout de toggle_state comme argument optionnel
+def music(state, toggle_state=None):
     if not hasattr(state, 'music_initialized') or not state.music_initialized:
         pygame.mixer.music.load("Sound/music.mp3")
         pygame.mixer.music.play(-1)
